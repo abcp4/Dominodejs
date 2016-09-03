@@ -1,2 +1,2 @@
 # Dominodejs
-Multiplayer game of dominoes
+An online Domino game using Isogenic Game Engine
