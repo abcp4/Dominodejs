@@ -1,0 +1,32 @@
+Estado(Tupla):
+	(status, p1_hand, p2_hand,field,l_end,r_end,player1Blocked,player2Blocked,boneyard,turn]
+onde
+	status pode ser 0(nao iniciou), 1(em progresso), 2(p1 bloqueado), 3(p2 bloqueado), 4(P1 venceu) , 5(P2 venceu)
+	l_end,r_end são ponta esquerda e ponta direita
+	player1Blocked,player2Blocked se p1 ou p2 estão bloqueados
+
+
+Ações(Tupla):
+	Na 1 jogada:
+		(lado_esquerdo,lado_direito,pos,local)
+	Nas demais:
+		(lado_diferente_da_ponta,orientacao,pos,local)
+	onde
+ 		local = mão ou boneyard
+ 		pos = pos na mão ou no boneyard
+ 		orientacao = se a pecao vai pra ponta esq ou dir
+ 	Se não tiver ação possivel, a ação será None
+ 	Na ação de boneyard, todas as peças antes da pos serão inserida na mão do player
+ 	Caso a ação do boneyard seja None, ele compra todas as peças e passa
+
+Situações especiais:
+	No inicio da partida l_end e r_end tem -1
+	Uma mesma peça pode gerar 2 ações, ex:
+		l_end = 2 , r_end = 3
+		p1_hand = (2,3)
+		Ações = (3,"left",0,"hand") , (2,"right",0,"hand")
+	O mesmo acontece para o boneyard
+		l_end = 2 , r_end = 3
+		p1_hand = None
+		boneyard = [(0,0),(2,3)]
+		Ações = (3,"left",0,"boneyard") , (2,"right",0,"boneyard")//veja que (0,0) sera comprado
