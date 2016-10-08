@@ -20,6 +20,7 @@ var ServerNetworkEvents = {
 			var p1 = ige.server.players[clientId].p1;
 			var p2 = ige.server.players[clientId].p2;
 			
+			ige.server.players[p1].game.streamDestroy();
 			ige.server.players[p1].game.destroy();
 
 			// Remove the reference to the player entity
@@ -38,16 +39,21 @@ var ServerNetworkEvents = {
 			// Checks if there's another client waiting for an opponent
 			if (ige.server.standbyPlayer[0]){
 				var p1 = ige.server.standbyPlayer[0];
-				if (!ige.server.players[clientId] && !ige.server.players[p1]){
+				var p2 = clientId;
+				
+				if (!ige.server.players[p1] && !ige.server.players[p2]){
 					// Create the DominoGame entity
-					ige.server.players[p1] = ige.server.players[clientId] = {
-						game: new DominoGame(p1, clientId)
-							.streamMode(1)
+					ige.server.players[p1] = ige.server.players[p2] = {
+						game: new DominoGame(p1, p2)
+							.streamMode(2)
 							.drawBounds(false)
 							.mount(ige.server.mainScene),
 						p1: p1,
-						p2: clientId
+						p2: p2
 					};
+					
+					ige.server.players[clientId].game.streamCreate([p1, p2]);
+					ige.server.players[clientId].game.streamSync([p1, p2]);
 					
 					// Send the entitiy id to both clients
 					ige.network.send('playerEntity', {
@@ -56,10 +62,10 @@ var ServerNetworkEvents = {
 						p2: false
 						}, p1);
 					ige.network.send('playerEntity', {
-						game: ige.server.players[clientId].game.id(),
+						game: ige.server.players[p2].game.id(),
 						p1: false,
 						p2: true
-						}, clientId);
+						}, p2);
 					
 					// Remove the client from the queue
 					ige.server.standbyPlayer.shift();
@@ -75,11 +81,14 @@ var ServerNetworkEvents = {
 				ige.server.players[clientId] = {
 					game: new DominoGame(clientId)
 						.drawBounds(false)
-						.streamMode(1)
-						.mount(ige.server.foregroundMap),
+						.streamMode(2)
+						.mount(ige.server.mainScene),
 					p1: clientId,
 					p2: 'IA'
 				};
+				
+				ige.server.players[clientId].game.streamCreate([clientId]);
+				ige.server.players[clientId].game.streamSync([clientId]);
 			
 				// Tell the client to track their player entity
 				ige.network.send('playerEntity', {
@@ -97,7 +106,7 @@ var ServerNetworkEvents = {
 		var p2 = ige.server.players[clientId].p2;
 		
 		if ((game.turn_player == 1 && clientId != p1) || (game.turn_player == 2 && clientId != p2)){
-			ige.server.log('É a vez do jogador '+game.turn_player+' e Cliente '+clientId+' tentou jogar no turno errado');
+			ige.server.log('É a vez do jogador '+game.turn_player+' e Cliente '+clientId+' tentou jogar no turno errado!');
 			ige.network.response(requestId, {sucess: false});
 		}else{
 			//if (game.turn_player == 1) ige.server.log('PossibleActions '+game._PossibleActions(1)+' l_end: '+game.l_end+' r_end: '+game.r_end+' pedra: '+game.p1_hand[data.index]+' lado: '+data.side);
@@ -113,6 +122,14 @@ var ServerNetworkEvents = {
 			var res = game._Play(data.index, data.side);
 			
 			if (game.game_ended) ige.server.log('O jogo acabou');
+			
+			var pSync = [];
+			
+			if (p2 == 'IA'){
+				pSync = [clientId];
+			}else pSync = [p1, p2];
+			
+			ige.server.players[clientId].game.streamSync(pSync);
 			
 			ige.network.response(requestId, {sucess: res});
 		}
