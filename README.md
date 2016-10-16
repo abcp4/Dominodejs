@@ -6,8 +6,6 @@ TO-DO
 
 >Ajeitar o desenho do campo
 
->Fazer deixar de poder ver as pedras do oponente
-
 >Mostrar na tela de quem é a vez, se o jogo já acabou, pontuação
 
 >Verificar se está passando a vez quando travado automagicamente
