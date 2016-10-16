@@ -46,8 +46,8 @@ var DominoGame = IgeEntity.extend({
 						.texture(self.DominoTexture)
 						.cell(i+1)
 						.dimensionsFromCell()
-						.streamMode(1)
-						.mount(self);
+						//.streamMode(1)
+						.mount(ige.client.mainScene);
 					
 					self.pieces_obj[i].mouseUp(function (event, control){
 						if ((ige.client.p1 && this._customId == 'p1') || (ige.client.p2 && this._customId == 'p2')){
@@ -60,13 +60,11 @@ var DominoGame = IgeEntity.extend({
 							ige.client.sel_side = 'r';
 						}
 						
-						ige.client.log('Click! Side='+ige.client.sel_side+' Piece='+ige.client.sel_piece);
-						
 						if (ige.client.sel_piece != -1 && ige.client.sel_side != 'n'){
 							var index = ige.client.sel_piece;
 							var side = ige.client.sel_side;
 							
-							ige.client.log('Click2! Side='+ige.client.sel_side+' Piece='+ige.client.sel_piece);
+							ige.client.log('Click! Side='+ige.client.sel_side+' Piece='+ige.client.sel_piece);
 							
 							// side == 0 -> nenhuma peça jogada, lado não importa
 							// side == 1 -> uma unica peça jogada, tem que tentar dos 2 lados
@@ -413,12 +411,22 @@ var DominoGame = IgeEntity.extend({
 			// Contador sobre o vetor de peças
 			var k = 0;
 			
-			for (i = 0; i < this.p1_hand.length; i++){
+			if (ige.client.p1){
+				p_hand = this.p1_hand;
+				o_hand = this.p2_hand;
+			}else if (ige.client.p2){
+				p_hand = this.p2_hand;
+				o_hand = this.p1_hand;
+			}
+			
+			for (i = 0; i < p_hand.length; i++){
 				this.pieces_obj[k]
-					.cell(this._pieceToCell(this.p1_hand[i]))
-					.translateTo(-25*this.p1_hand.length + 50*i, -200, 0);
+					.cell(this._pieceToCell(p_hand[i]))
+					.translateTo(-25*p_hand.length + 50*i, 200, 0);
 				
-				this.pieces_obj[k]._customId = 'p1';
+				if (ige.client.p1) this.pieces_obj[k]._customId = 'p1';
+				else if (ige.client.p2) this.pieces_obj[k]._customId = 'p2';
+				
 				this.pieces_obj[k]._customPos = i;
 				
 				if (ige.client.p1 && ige.client.sel_piece == i) this.pieces_obj[k].drawBounds(true);
@@ -426,12 +434,14 @@ var DominoGame = IgeEntity.extend({
 				
 				k++;
 			}
-			for (i = 0; i < this.p2_hand.length; i++){
+			for (i = 0; i < o_hand.length; i++){
 				this.pieces_obj[k]
-					.cell(this._pieceToCell(this.p2_hand[i]))
-					.translateTo(-25*this.p2_hand.length + 50*i, 200, 0);
+					.cell(1)
+					.translateTo(-25*o_hand.length + 50*i, -200, 0);
 				
-				this.pieces_obj[k]._customId = 'p2';
+				if (ige.client.p1) this.pieces_obj[k]._customId = 'p1';
+				else if (ige.client.p2) this.pieces_obj[k]._customId = 'p2';
+				
 				this.pieces_obj[k]._customPos = i;
 				
 				if (ige.client.p2 && ige.client.sel_piece == i) this.pieces_obj[k].drawBounds(true);
