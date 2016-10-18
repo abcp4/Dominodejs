@@ -126,10 +126,8 @@ var ServerNetworkEvents = {
 			var pSync = [];
 			
 			if (p2 == 'IA'){
-				pSync = [clientId];
-			}else pSync = [p1, p2];
-			
-			ige.server.players[clientId].game.streamSync(pSync);
+				ige.server.players[clientId].game.streamSync(clientId);
+			}else pSync = ige.server.players[clientId].game.streamSync([p1, p2]);
 			
 			ige.network.response(requestId, {sucess: res});
 		}
