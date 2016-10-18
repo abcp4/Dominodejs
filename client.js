@@ -86,7 +86,7 @@ var Client = IgeClass.extend({
 						self.p1 = false;
 						self.p2 = false;
 						self.sel_piece = -1;
-						self.sel_side = '0';
+						self.sel_side = 'f';
 						
 						/*// Create the texture map that will work as our "tile background"
 						// Create the texture maps
