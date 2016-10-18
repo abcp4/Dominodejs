@@ -50,25 +50,31 @@ var DominoGame = IgeEntity.extend({
 						.mount(ige.client.mainScene);
 					
 					self.pieces_obj[i].mouseUp(function (event, control){
-						if ((ige.client.p1 && this._customId == 'p1') || (ige.client.p2 && this._customId == 'p2')){
-							ige.client.sel_piece = this._customPos;
+						if (this._customId == 'p_hand'){
+							if (ige.client.sel_piece != this._customPos){
+								ige.client.sel_piece = this._customPos; //seleciona pedra
+							}else ige.client.sel_piece = -1; //deseleciona pedra
 						}else if (this._customId == 'first'){
-							ige.client.sel_side = '1';
+							if (ige.client.sel_side != 'f'){
+								ige.client.sel_side = 'l'; //seleciona pedra
+							}else ige.client.sel_side = 'n'; //deseleciona pedra
 						}else if (this._customId == 'l_end'){
-							ige.client.sel_side = 'l';
+							if (ige.client.sel_side != 'f'){
+								ige.client.sel_side = 'l'; //seleciona pedra
+							}else ige.client.sel_side = 'n'; //deseleciona pedra
 						}else if (this._customId == 'r_end'){
-							ige.client.sel_side = 'r';
+							if (ige.client.sel_side != 'f'){
+								ige.client.sel_side = 'r'; //seleciona pedra
+							}else ige.client.sel_side = 'n'; //deseleciona pedra
 						}
 						
-						if (ige.client.sel_piece != -1 && ige.client.sel_side != 'n'){
+						ige.client.log('Click! Piece=' + ige.client.sel_piece + ' Side=' +ige.client.sel_side);
+						
+						if (ige.client.sel_piece > -1 && ige.client.sel_side != 'n'){
 							var index = ige.client.sel_piece;
 							var side = ige.client.sel_side;
 							
-							ige.client.log('Click! Side='+ige.client.sel_side+' Piece='+ige.client.sel_piece);
-							
-							// side == 0 -> nenhuma peça jogada, lado não importa
-							// side == 1 -> uma unica peça jogada, tem que tentar dos 2 lados
-							if (side == '0' || side == '1') side = 'l';
+							if (side == 'f') side = 'l';
 							
 							ige.network.request('playPiece',{index: index, side: side}, function (cmd, result){
 								if (result.sucess){
@@ -76,11 +82,12 @@ var DominoGame = IgeEntity.extend({
 									ige.client.log('Sucesso de primeira!');
 								}else{
 									ige.client.log('Errou!');
-									if (ige.client.sel_side == '1'){
-										ige.client.log('Tentando de novo');
+									if (self.field.length == 1){
+										ige.client.log('Só tem uma pedra no campo, tentando no outro lado');
 										ige.network.request('playPiece',{index: index, side: 'r'}, function (cmd, result){
 											if (result.sucess){
 												//faz outra coisa aqui
+												self.streamForceUpdate();
 												ige.client.log('Sucesso na segunda!');
 											}else{
 												//Errou de novo
@@ -408,9 +415,9 @@ var DominoGame = IgeEntity.extend({
 	
 	update: function (ctx, tickDelta){
 		if (ige.isClient){
-			// Contador sobre o vetor de peças
-			var k = 0;
+			var k = 0; //Contador sobre o vetor de peças
 			
+			//Descobre qual é a mão do jogador
 			if (ige.client.p1){
 				p_hand = this.p1_hand;
 				o_hand = this.p2_hand;
@@ -419,33 +426,38 @@ var DominoGame = IgeEntity.extend({
 				o_hand = this.p1_hand;
 			}
 			
+			var x = 0;
+			var y = 0;
+			
+			//Desenha a mão do jogador
 			for (i = 0; i < p_hand.length; i++){
+				x = -25*p_hand.length + 50*i;
+				y = 200;
+				
+				if (ige.client.sel_piece == i) y -= 50;
+				
 				this.pieces_obj[k]
 					.cell(this._pieceToCell(p_hand[i]))
-					.translateTo(-25*p_hand.length + 50*i, 200, 0);
+					.translateTo(x, y, 0);
 				
-				if (ige.client.p1) this.pieces_obj[k]._customId = 'p1';
-				else if (ige.client.p2) this.pieces_obj[k]._customId = 'p2';
-				
+				this.pieces_obj[k]._customId = 'p_hand';
 				this.pieces_obj[k]._customPos = i;
 				
-				if (ige.client.p1 && ige.client.sel_piece == i) this.pieces_obj[k].drawBounds(true);
+				if (ige.client.sel_piece == i) this.pieces_obj[k].drawBounds(true);
 				else this.pieces_obj[k].drawBounds(false);
 				
 				k++;
 			}
+			//Desenha a mão do oponente
 			for (i = 0; i < o_hand.length; i++){
 				this.pieces_obj[k]
 					.cell(1)
 					.translateTo(-25*o_hand.length + 50*i, -200, 0);
 				
-				if (ige.client.p1) this.pieces_obj[k]._customId = 'p1';
-				else if (ige.client.p2) this.pieces_obj[k]._customId = 'p2';
-				
+				this.pieces_obj[k]._customId = 'o_hand';
 				this.pieces_obj[k]._customPos = i;
 				
-				if (ige.client.p2 && ige.client.sel_piece == i) this.pieces_obj[k].drawBounds(true);
-				else this.pieces_obj[k].drawBounds(false);
+				this.pieces_obj[k].drawBounds(false);
 				
 				k++;
 			}
@@ -453,8 +465,7 @@ var DominoGame = IgeEntity.extend({
 			var last_r = k;
 			var last_l = k;
 			
-			var x = 0;
-			var y = 0;
+			x = y = 0;
 			var r = Math.radians(90);
 			
 			for (i = 0; i < this.field.length; i++){
