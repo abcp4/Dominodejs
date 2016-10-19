@@ -466,18 +466,33 @@ var DominoGame = IgeEntity.extend({
 			var last_l = k;
 			
 			x = y = 0;
-			var r = Math.radians(90);
+			var rz = Math.radians(90);
 			
 			for (i = 0; i < this.field.length; i++){
 				
 				if (i>0){
-					if (this.field[i][2] == 'r') x = this.pieces_obj[last_r].translate().x() + 50;
-					else if (this.field[i][2] == 'l') x = this.pieces_obj[last_l].translate().x() - 50;
+					if (this.field[i][2] == 'r'){
+						x = this.pieces_obj[last_r].translate().x() + 103;
+						if (this.pieces_obj[last_r].rotate().z() == Math.radians(90)){
+							rz = Math.radians(-90);
+						}else if (this.pieces_obj[last_r].rotate().z() == Math.radians(-90)){
+							rz = Math.radians(90);
+						}
+					}
+					else if (this.field[i][2] == 'l'){
+						x = this.pieces_obj[last_l].translate().x() - 103;
+						if (this.pieces_obj[last_l].rotate().z() == Math.radians(90)){
+							rz = Math.radians(-90);
+						}else if (this.pieces_obj[last_l].rotate().z() == Math.radians(-90)){
+							rz = Math.radians(90);
+						}
+					}
 				}
 				
 				this.pieces_obj[k]
 					.cell(this._pieceToCell(this.field[i][0]))
-					.translateTo(x,0,0);
+					.translateTo(x,y,0)
+					.rotateTo(0,0,rz);
 				
 				if (this.field.length == 1){
 					this.pieces_obj[k]._customId = 'first';
@@ -492,6 +507,9 @@ var DominoGame = IgeEntity.extend({
 				}	
 				
 				this.pieces_obj[k]._customPos = i;
+				
+				ige.client.log('Teste rotate ' + this.pieces_obj[k].rotate().x());
+				
 				k++;
 			}
 			if (this.field.length > 1){
