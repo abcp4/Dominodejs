@@ -2,6 +2,8 @@
 An online Domino game using Isogenic Game Engine
 
 TO-DO
+>Permitir compra
+
 >Verificar se realmente está bloqueando todos os outros players exceto os 2 jogadores
 
 >Ajeitar o desenho do campo (girar os camburões corretamente, virar a corrente quando sair da tela)
